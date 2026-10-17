@@ -1,0 +1,89 @@
+{
+  "keyword": {
+    "examples": 24,
+    "correct": 20,
+    "accuracy": 0.8333,
+    "accuracy_ci95": [
+      0.6415,
+      0.9332
+    ],
+    "macro_f1": 0.842,
+    "protocol": "full",
+    "failure_ids": [
+      "ticket-005",
+      "ticket-006",
+      "ticket-012",
+      "ticket-018"
+    ]
+  },
+  "tfidf_leave_one_out": {
+    "examples": 24,
+    "correct": 7,
+    "accuracy": 0.2917,
+    "accuracy_ci95": [
+      0.1491,
+      0.4917
+    ],
+    "macro_f1": 0.2932,
+    "protocol": "leave-one-out",
+    "failure_ids": [
+      "ticket-002",
+      "ticket-003",
+      "ticket-005",
+      "ticket-007",
+      "ticket-008",
+      "ticket-009",
+      "ticket-010",
+      "ticket-011",
+      "ticket-012",
+      "ticket-013",
+      "ticket-015",
+      "ticket-016",
+      "ticket-018",
+      "ticket-019",
+      "ticket-020",
+      "ticket-022",
+      "ticket-023"
+    ]
+  },
+  "recovered_by_tfidf": [
+    "ticket-006"
+  ],
+  "new_tfidf_failures": [
+    "ticket-002",
+    "ticket-003",
+    "ticket-007",
+    "ticket-008",
+    "ticket-009",
+    "ticket-010",
+    "ticket-011",
+    "ticket-013",
+    "ticket-015",
+    "ticket-016",
+    "ticket-019",
+    "ticket-020",
+    "ticket-022",
+    "ticket-023"
+  ],
+  "shared_failures": [
+    "ticket-005",
+    "ticket-012",
+    "ticket-018"
+  ],
+  "keyword_wins_macro_f1": true,
+  "accuracy_intervals_overlap": false,
+  "tfidf_in_sample_invalid": {
+    "examples": 24,
+    "correct": 24,
+    "accuracy": 1.0,
+    "accuracy_ci95": [
+      0.862,
+      1.0
+    ],
+    "macro_f1": 1.0,
+    "protocol": "in-sample",
+    "failure_ids": [],
+    "valid": false,
+    "reason": "Training and evaluating on the same examples leaks each ticket into the representation, so in-sample accuracy is not evidence."
+  }
+}

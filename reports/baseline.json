@@ -2,6 +2,10 @@
   "examples": 24,
   "correct": 20,
   "accuracy": 0.8333,
+  "accuracy_ci95": [
+    0.6415,
+    0.9332
+  ],
   "macro_f1": 0.842,
   "per_label": {
     "account": {
@@ -80,5 +84,7 @@
       "expected": "technical",
       "predicted": "general"
     }
-  ]
+  ],
+  "method": "keyword",
+  "protocol": "full"
 }

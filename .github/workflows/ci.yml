@@ -23,7 +23,11 @@ jobs:
         run: python -m pip install -e .
       - name: Run behavioral tests
         run: python -m unittest discover -s tests -v
-      - name: Reproduce baseline evaluation
+      - name: Reproduce committed evaluation reports
         run: |
-          frontier-eval data/support_tickets.jsonl --output "$RUNNER_TEMP/baseline.json"
+          frontier-eval data/support_tickets.jsonl --method keyword --output "$RUNNER_TEMP/baseline.json"
           cmp reports/baseline.json "$RUNNER_TEMP/baseline.json"
+          frontier-eval data/support_tickets.jsonl --method tfidf --output "$RUNNER_TEMP/tfidf-loo.json"
+          cmp reports/tfidf-loo.json "$RUNNER_TEMP/tfidf-loo.json"
+          frontier-eval data/support_tickets.jsonl --compare --output "$RUNNER_TEMP/comparison.json"
+          cmp reports/comparison.json "$RUNNER_TEMP/comparison.json"

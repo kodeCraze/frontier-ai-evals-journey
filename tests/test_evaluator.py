@@ -38,6 +38,27 @@ class EvaluatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unsupported label"):
             evaluate([Example("1", "hello", "general")], lambda _: "other")
 
+    def test_accepts_aligned_predictions_and_confidence_interval(self) -> None:
+        examples = [
+            Example("1", "one", "account"),
+            Example("2", "two", "billing"),
+        ]
+
+        report = evaluate(examples, predictions=["account", "general"])
+
+        self.assertEqual(report["correct"], 1)
+        self.assertEqual(report["accuracy"], 0.5)
+        self.assertEqual(report["accuracy_ci95"], [0.0945, 0.9055])
+        self.assertEqual(report["failures"][0]["id"], "2")
+
+    def test_rejects_predict_and_predictions_together(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not both"):
+            evaluate([Example("1", "hello", "general")], lambda _: "general", predictions=["general"])
+
+    def test_rejects_misaligned_predictions(self) -> None:
+        with self.assertRaisesRegex(ValueError, "align"):
+            evaluate([Example("1", "hello", "general")], predictions=["general", "account"])
+
 
 if __name__ == "__main__":
     unittest.main()
