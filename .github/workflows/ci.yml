@@ -27,4 +27,3 @@ jobs:
         run: |
           frontier-eval data/support_tickets.jsonl --output "$RUNNER_TEMP/baseline.json"
           cmp reports/baseline.json "$RUNNER_TEMP/baseline.json"
-

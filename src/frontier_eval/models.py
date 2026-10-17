@@ -46,9 +46,7 @@ def load_jsonl(path: Path) -> list[Example]:
             ]
             if non_string_fields:
                 fields_text = ", ".join(non_string_fields)
-                raise ValueError(
-                    f"Line {line_number} fields must be strings: {fields_text}"
-                )
+                raise ValueError(f"Line {line_number} fields must be strings: {fields_text}")
 
             example = Example(
                 id=record["id"].strip(),
@@ -71,4 +69,3 @@ def load_jsonl(path: Path) -> list[Example]:
     if not examples:
         raise ValueError("Evaluation dataset is empty")
     return examples
-

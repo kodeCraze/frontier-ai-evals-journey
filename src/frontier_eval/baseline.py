@@ -73,7 +73,7 @@ class KeywordRouter:
     """Route text by counting label-specific keyword matches."""
 
     def predict(self, text: str) -> str:
-        """Return the highest-scoring label with a stable fallback for ties."""
+        """Return the unique highest-scoring label, or `general` for ties and no match."""
 
         tokens = TOKEN_PATTERN.findall(text.lower())
         scores = Counter(
@@ -88,4 +88,3 @@ class KeywordRouter:
 
         winners = [label for label, score in scores.items() if score == best_score]
         return winners[0] if len(winners) == 1 else "general"
-

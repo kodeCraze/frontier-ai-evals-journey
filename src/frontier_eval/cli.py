@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from frontier_eval.baseline import KeywordRouter
 from frontier_eval.evaluator import evaluate
@@ -52,9 +53,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.output is not None:
         same_resolved_path = args.dataset.resolve() == args.output.resolve()
         same_existing_file = (
-            args.dataset.exists()
-            and args.output.exists()
-            and args.dataset.samefile(args.output)
+            args.dataset.exists() and args.output.exists() and args.dataset.samefile(args.output)
         )
         if same_resolved_path or same_existing_file:
             parser.error("dataset and output paths must be different")
@@ -68,4 +67,3 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"\nJSON report written to {args.output}")
     return 0
-

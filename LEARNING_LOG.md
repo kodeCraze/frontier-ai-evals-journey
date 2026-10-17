@@ -18,7 +18,7 @@ Those failures will show what a model-based approach must improve.
 1. Define four mutually exclusive routing labels.
 2. Store labeled examples in versioned JSON Lines.
 3. Score tokens using an inspectable label-to-keyword mapping.
-4. Use a stable fallback for ties and no-match cases.
+4. Route every multi-label tie and no-match case to the `general` fallback.
 5. Report accuracy, macro F1, per-label metrics, a confusion matrix, and all
    failed examples.
 6. Lock the public behavior with tests.
@@ -56,4 +56,3 @@ reproduce them.
 Add an embedding-based classifier behind the same `predict(text)` interface and
 compare it with the deterministic baseline. Preserve failures where the simpler
 system wins.
-

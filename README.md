@@ -38,6 +38,9 @@ To save the machine-readable report:
 frontier-eval data/support_tickets.jsonl --output reports/baseline.json
 ```
 
+The output must be a different file from the input dataset, including through
+normalized-path or hard-link aliases.
+
 The versioned baseline report records 20 correct predictions across 24 examples:
 83.33% accuracy and 0.842 macro F1. Its four failures are retained for inspection
 and CI regenerates the report to ensure the committed evidence stays reproducible.
@@ -96,4 +99,3 @@ only after they are measured.
 ## License
 
 MIT
-

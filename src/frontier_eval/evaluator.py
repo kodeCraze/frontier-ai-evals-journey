@@ -12,9 +12,7 @@ def _safe_divide(numerator: int, denominator: int) -> float:
     return numerator / denominator if denominator else 0.0
 
 
-def evaluate(
-    examples: Iterable[Example], predict: Callable[[str], str]
-) -> dict[str, Any]:
+def evaluate(examples: Iterable[Example], predict: Callable[[str], str]) -> dict[str, Any]:
     """Evaluate a predictor and retain aggregate and example-level evidence."""
 
     rows = list(examples)
@@ -22,8 +20,7 @@ def evaluate(
         raise ValueError("At least one example is required")
 
     confusion = {
-        expected: {predicted: 0 for predicted in ALLOWED_LABELS}
-        for expected in ALLOWED_LABELS
+        expected: {predicted: 0 for predicted in ALLOWED_LABELS} for expected in ALLOWED_LABELS
     }
     failures: list[dict[str, str]] = []
     correct = 0
@@ -71,4 +68,3 @@ def evaluate(
         "confusion_matrix": confusion,
         "failures": failures,
     }
-
