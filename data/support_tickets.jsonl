@@ -1,0 +1,24 @@
+{"id":"ticket-001","text":"I forgot my password and cannot login","label":"account"}
+{"id":"ticket-002","text":"Please change the email on my profile","label":"account"}
+{"id":"ticket-003","text":"The identity verification step keeps rejecting me","label":"account"}
+{"id":"ticket-004","text":"My username is no longer recognized","label":"account"}
+{"id":"ticket-005","text":"How can I sign in from a new phone?","label":"account"}
+{"id":"ticket-006","text":"I am locked out after replacing my device","label":"account"}
+{"id":"ticket-007","text":"My card was charged twice this month","label":"billing"}
+{"id":"ticket-008","text":"Where can I download the latest invoice?","label":"billing"}
+{"id":"ticket-009","text":"I cancelled but still need a refund","label":"billing"}
+{"id":"ticket-010","text":"The payment for my subscription failed","label":"billing"}
+{"id":"ticket-011","text":"Can you send a receipt for the annual plan?","label":"billing"}
+{"id":"ticket-012","text":"Why did the renewal cost more than last year?","label":"billing"}
+{"id":"ticket-013","text":"The website crashes whenever I upload a file","label":"technical"}
+{"id":"ticket-014","text":"Our API integration returns an error","label":"technical"}
+{"id":"ticket-015","text":"Everything is loading very slowly today","label":"technical"}
+{"id":"ticket-016","text":"Requests timeout when traffic increases","label":"technical"}
+{"id":"ticket-017","text":"Is there an outage in the Asia region?","label":"technical"}
+{"id":"ticket-018","text":"The export button does nothing","label":"technical"}
+{"id":"ticket-019","text":"Where is the documentation for team workspaces?","label":"general"}
+{"id":"ticket-020","text":"I have feedback about the new dashboard","label":"general"}
+{"id":"ticket-021","text":"Is dark mode on the product roadmap?","label":"general"}
+{"id":"ticket-022","text":"Do you have a tutorial for first-time users?","label":"general"}
+{"id":"ticket-023","text":"What hours is live support available?","label":"general"}
+{"id":"ticket-024","text":"Does the product work for university research teams?","label":"general"}

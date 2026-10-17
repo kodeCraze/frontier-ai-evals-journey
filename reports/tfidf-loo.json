@@ -1,0 +1,168 @@
+{
+  "examples": 24,
+  "correct": 7,
+  "accuracy": 0.2917,
+  "accuracy_ci95": [
+    0.1491,
+    0.4917
+  ],
+  "macro_f1": 0.2932,
+  "per_label": {
+    "account": {
+      "support": 6,
+      "precision": 0.4286,
+      "recall": 0.5,
+      "f1": 0.4615
+    },
+    "billing": {
+      "support": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "general": {
+      "support": 6,
+      "precision": 0.2222,
+      "recall": 0.3333,
+      "f1": 0.2667
+    },
+    "technical": {
+      "support": 6,
+      "precision": 0.6667,
+      "recall": 0.3333,
+      "f1": 0.4444
+    }
+  },
+  "confusion_matrix": {
+    "account": {
+      "account": 3,
+      "billing": 2,
+      "general": 1,
+      "technical": 0
+    },
+    "billing": {
+      "account": 3,
+      "billing": 0,
+      "general": 3,
+      "technical": 0
+    },
+    "general": {
+      "account": 1,
+      "billing": 2,
+      "general": 2,
+      "technical": 1
+    },
+    "technical": {
+      "account": 0,
+      "billing": 1,
+      "general": 3,
+      "technical": 2
+    }
+  },
+  "failures": [
+    {
+      "id": "ticket-002",
+      "text": "Please change the email on my profile",
+      "expected": "account",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-003",
+      "text": "The identity verification step keeps rejecting me",
+      "expected": "account",
+      "predicted": "billing"
+    },
+    {
+      "id": "ticket-005",
+      "text": "How can I sign in from a new phone?",
+      "expected": "account",
+      "predicted": "billing"
+    },
+    {
+      "id": "ticket-007",
+      "text": "My card was charged twice this month",
+      "expected": "billing",
+      "predicted": "account"
+    },
+    {
+      "id": "ticket-008",
+      "text": "Where can I download the latest invoice?",
+      "expected": "billing",
+      "predicted": "account"
+    },
+    {
+      "id": "ticket-009",
+      "text": "I cancelled but still need a refund",
+      "expected": "billing",
+      "predicted": "account"
+    },
+    {
+      "id": "ticket-010",
+      "text": "The payment for my subscription failed",
+      "expected": "billing",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-011",
+      "text": "Can you send a receipt for the annual plan?",
+      "expected": "billing",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-012",
+      "text": "Why did the renewal cost more than last year?",
+      "expected": "billing",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-013",
+      "text": "The website crashes whenever I upload a file",
+      "expected": "technical",
+      "predicted": "billing"
+    },
+    {
+      "id": "ticket-015",
+      "text": "Everything is loading very slowly today",
+      "expected": "technical",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-016",
+      "text": "Requests timeout when traffic increases",
+      "expected": "technical",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-018",
+      "text": "The export button does nothing",
+      "expected": "technical",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-019",
+      "text": "Where is the documentation for team workspaces?",
+      "expected": "general",
+      "predicted": "billing"
+    },
+    {
+      "id": "ticket-020",
+      "text": "I have feedback about the new dashboard",
+      "expected": "general",
+      "predicted": "account"
+    },
+    {
+      "id": "ticket-022",
+      "text": "Do you have a tutorial for first-time users?",
+      "expected": "general",
+      "predicted": "billing"
+    },
+    {
+      "id": "ticket-023",
+      "text": "What hours is live support available?",
+      "expected": "general",
+      "predicted": "technical"
+    }
+  ],
+  "method": "tfidf",
+  "protocol": "leave-one-out"
+}
