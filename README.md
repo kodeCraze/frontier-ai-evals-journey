@@ -38,6 +38,10 @@ To save the machine-readable report:
 frontier-eval data/support_tickets.jsonl --output reports/baseline.json
 ```
 
+The versioned baseline report records 20 correct predictions across 24 examples:
+83.33% accuracy and 0.842 macro F1. Its four failures are retained for inspection
+and CI regenerates the report to ensure the committed evidence stays reproducible.
+
 To run the behavioral tests:
 
 ```bash
@@ -83,10 +87,11 @@ The repository will earn a résumé bullet only when it contains enough evidence
 The target format is:
 
 > Built a versioned evaluation harness for support-ticket routing, measuring
-> per-class quality and failure modes across multiple baselines; improved macro
-> F1 from **N** to **M** while reporting latency and cost tradeoffs.
+> per-class quality and failure modes; established a transparent baseline at
+> **0.842 macro F1** (83.33% accuracy) before adding model complexity.
 
-Numbers will be filled in only after they are measured.
+Future comparisons will add latency and cost evidence and report improvements
+only after they are measured.
 
 ## License
 

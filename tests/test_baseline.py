@@ -21,6 +21,9 @@ class KeywordRouterTests(unittest.TestCase):
     def test_tie_with_general_uses_safe_fallback(self) -> None:
         self.assertEqual(self.router.predict("password question"), "general")
 
+    def test_tie_without_general_uses_safe_fallback(self) -> None:
+        self.assertEqual(self.router.predict("password charge"), "general")
+
 
 if __name__ == "__main__":
     unittest.main()

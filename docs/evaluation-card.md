@@ -41,6 +41,23 @@ Known limitations:
 - Macro F1 gives every label equal weight.
 - The confusion matrix and failure list retain information hidden by aggregates.
 
+## Baseline result
+
+On the 24 versioned examples, the keyword router produced 20 correct predictions,
+for **0.8333 accuracy** and **0.8420 macro F1**. The confusion matrix is:
+
+| Expected \\ predicted | account | billing | general | technical |
+| --- | ---: | ---: | ---: | ---: |
+| account | 4 | 0 | 2 | 0 |
+| billing | 0 | 5 | 1 | 0 |
+| general | 0 | 0 | 6 | 0 |
+| technical | 0 | 0 | 1 | 5 |
+
+The four failures are `ticket-005`, `ticket-006`, `ticket-012`, and
+`ticket-018`. All fell back to `general` because their phrasing contained no
+recognized keyword. The complete per-label metrics and failed-example records
+are preserved in [`reports/baseline.json`](../reports/baseline.json).
+
 ## Decision supported
 
 The evaluation can determine whether a future approach improves on the simple

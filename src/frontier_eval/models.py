@@ -41,10 +41,19 @@ def load_jsonl(path: Path) -> list[Example]:
                 missing_text = ", ".join(sorted(missing))
                 raise ValueError(f"Line {line_number} is missing fields: {missing_text}")
 
+            non_string_fields = [
+                field for field in ("id", "text", "label") if not isinstance(record[field], str)
+            ]
+            if non_string_fields:
+                fields_text = ", ".join(non_string_fields)
+                raise ValueError(
+                    f"Line {line_number} fields must be strings: {fields_text}"
+                )
+
             example = Example(
-                id=str(record["id"]).strip(),
-                text=str(record["text"]).strip(),
-                label=str(record["label"]).strip(),
+                id=record["id"].strip(),
+                text=record["text"].strip(),
+                label=record["label"].strip(),
             )
             if not example.id or not example.text:
                 raise ValueError(f"Line {line_number} has an empty id or text")

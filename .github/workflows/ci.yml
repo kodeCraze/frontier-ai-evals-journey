@@ -24,5 +24,7 @@ jobs:
       - name: Run behavioral tests
         run: python -m unittest discover -s tests -v
       - name: Reproduce baseline evaluation
-        run: frontier-eval data/support_tickets.jsonl --output reports/baseline.json
+        run: |
+          frontier-eval data/support_tickets.jsonl --output "$RUNNER_TEMP/baseline.json"
+          cmp reports/baseline.json "$RUNNER_TEMP/baseline.json"
 

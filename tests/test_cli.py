@@ -31,6 +31,20 @@ class CliTests(unittest.TestCase):
             self.assertEqual(report["accuracy"], 1.0)
             self.assertIn("Accuracy: 100.0%", stdout.getvalue())
 
+    def test_rejects_output_path_that_resolves_to_dataset(self) -> None:
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
+            root = Path(directory)
+            dataset = root / "dataset.jsonl"
+            original = '{"id":"1","text":"hello","label":"general"}\n'
+            dataset.write_text(original, encoding="utf-8")
+            equivalent_output = root / "nested" / ".." / "dataset.jsonl"
+
+            with contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaisesRegex(SystemExit, "2"):
+                    main([str(dataset), "--output", str(equivalent_output)])
+
+            self.assertEqual(dataset.read_text(encoding="utf-8"), original)
+
 
 if __name__ == "__main__":
     unittest.main()

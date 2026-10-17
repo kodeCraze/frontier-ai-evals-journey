@@ -47,7 +47,11 @@ def render_summary(report: dict[str, Any]) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.output is not None and args.dataset.resolve() == args.output.resolve():
+        parser.error("dataset and output paths must be different")
+
     examples = load_jsonl(args.dataset)
     report = evaluate(examples, KeywordRouter().predict)
     print(render_summary(report))

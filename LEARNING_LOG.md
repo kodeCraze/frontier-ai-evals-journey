@@ -33,9 +33,23 @@ Those failures will show what a model-based approach must improve.
 
 ### Result
 
-Run `frontier-eval data/support_tickets.jsonl` to reproduce the measured result.
-The generated report is excluded from Git because it is reproducible from the
-committed code and data.
+The baseline classified 20 of 24 examples correctly: accuracy **0.8333** and
+macro F1 **0.8420**. The confusion matrix (rows are expected labels, columns are
+predictions in `account`, `billing`, `general`, `technical` order) was:
+
+| Expected | account | billing | general | technical |
+| --- | ---: | ---: | ---: | ---: |
+| account | 4 | 0 | 2 | 0 |
+| billing | 0 | 5 | 1 | 0 |
+| general | 0 | 0 | 6 | 0 |
+| technical | 0 | 0 | 1 | 5 |
+
+The failed examples were `ticket-005`, `ticket-006`, `ticket-012`, and
+`ticket-018`; each lacked a recognized label keyword and fell back to `general`.
+The complete metrics and failure records are preserved in
+[`reports/baseline.json`](reports/baseline.json). Run
+`frontier-eval data/support_tickets.jsonl --output reports/baseline.json` to
+reproduce them.
 
 ### Next experiment
 

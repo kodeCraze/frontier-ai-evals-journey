@@ -38,6 +38,19 @@ class DatasetLoadingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported label"):
             load_jsonl(path)
 
+    def test_rejects_non_string_fields(self) -> None:
+        records = {
+            "id": '{"id":null,"text":"hello","label":"general"}\n',
+            "text": '{"id":"1","text":{},"label":"general"}\n',
+            "label": '{"id":"1","text":"hello","label":7}\n',
+        }
+
+        for field, content in records.items():
+            with self.subTest(field=field):
+                path = self.write_dataset(content)
+                with self.assertRaisesRegex(ValueError, "fields must be strings"):
+                    load_jsonl(path)
+
 
 if __name__ == "__main__":
     unittest.main()
