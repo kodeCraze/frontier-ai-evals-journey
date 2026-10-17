@@ -49,8 +49,15 @@ def render_summary(report: dict[str, Any]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.output is not None and args.dataset.resolve() == args.output.resolve():
-        parser.error("dataset and output paths must be different")
+    if args.output is not None:
+        same_resolved_path = args.dataset.resolve() == args.output.resolve()
+        same_existing_file = (
+            args.dataset.exists()
+            and args.output.exists()
+            and args.dataset.samefile(args.output)
+        )
+        if same_resolved_path or same_existing_file:
+            parser.error("dataset and output paths must be different")
 
     examples = load_jsonl(args.dataset)
     report = evaluate(examples, KeywordRouter().predict)
@@ -61,8 +68,4 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"\nJSON report written to {args.output}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
 
