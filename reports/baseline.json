@@ -1,0 +1,84 @@
+{
+  "examples": 24,
+  "correct": 20,
+  "accuracy": 0.8333,
+  "macro_f1": 0.842,
+  "per_label": {
+    "account": {
+      "support": 6,
+      "precision": 1.0,
+      "recall": 0.6667,
+      "f1": 0.8
+    },
+    "billing": {
+      "support": 6,
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091
+    },
+    "general": {
+      "support": 6,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.75
+    },
+    "technical": {
+      "support": 6,
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091
+    }
+  },
+  "confusion_matrix": {
+    "account": {
+      "account": 4,
+      "billing": 0,
+      "general": 2,
+      "technical": 0
+    },
+    "billing": {
+      "account": 0,
+      "billing": 5,
+      "general": 1,
+      "technical": 0
+    },
+    "general": {
+      "account": 0,
+      "billing": 0,
+      "general": 6,
+      "technical": 0
+    },
+    "technical": {
+      "account": 0,
+      "billing": 0,
+      "general": 1,
+      "technical": 5
+    }
+  },
+  "failures": [
+    {
+      "id": "ticket-005",
+      "text": "How can I sign in from a new phone?",
+      "expected": "account",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-006",
+      "text": "I am locked out after replacing my device",
+      "expected": "account",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-012",
+      "text": "Why did the renewal cost more than last year?",
+      "expected": "billing",
+      "predicted": "general"
+    },
+    {
+      "id": "ticket-018",
+      "text": "The export button does nothing",
+      "expected": "technical",
+      "predicted": "general"
+    }
+  ]
+}
