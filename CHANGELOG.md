@@ -9,7 +9,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
 - **First real model results** on the 30 Hindi items: `Qwen/Qwen3-0.6B` (60.1%) and
   `Qwen/Qwen3.5-0.8B` (66.2%), temperature 0. Tables in `results/hf/summary.md`; run log in
   `notes/2026-10-18-first-real-runs.md`.
-- CircleCI config (`.circleci/config.yml`) as a CI fallback.
+- CI runs via a single `.github/workflows/ci.yml` that serves **both** GitHub Actions and
+  CircleCI (this project's CircleCI setup runs that GitHub Actions workflow file directly).
 - `--max-new-tokens` flag for the `hf`/`openai`/`anthropic` backends.
 
 ### Fixed

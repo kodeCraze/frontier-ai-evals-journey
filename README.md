@@ -88,7 +88,7 @@ frontier-ai-evals-journey/
 ├─ notes/               ← dated lab log
 ├─ CITATION.cff         ← how to cite the suite
 ├─ CHANGELOG.md         ← suite versions
-└─ .github/workflows/   ← CI: validate on every push/PR
+└─ .github/workflows/ci.yml  ← CI: validate + smoke test (runs on GitHub Actions *and* CircleCI)
 ```
 
 ## How items are scored
