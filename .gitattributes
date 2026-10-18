@@ -1,0 +1,13 @@
+# Normalise line endings; force UTF-8 for scripts and data.
+* text=auto eol=lf
+
+*.py text eol=lf
+*.md text eol=lf
+*.jsonl text eol=lf
+*.json text eol=lf
+*.cff text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Data is UTF-8 (Devanagari and other scripts must round-trip).
+*.jsonl working-tree-encoding=UTF-8

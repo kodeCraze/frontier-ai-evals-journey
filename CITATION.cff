@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this evaluation suite, please cite it as below."
+title: "frontier-ai-evals-journey: an evaluation suite for Indian-language LLMs"
+abstract: >-
+  A small, honest, reproducible evaluation suite for Indian-language LLMs covering native grammar,
+  culturally grounded knowledge, reasoning, translation, instruction-following, and multilingual
+  safety behaviour, with a published methodology, judge prompts, and a reproducibility harness.
+authors:
+  - family-names: Sharma
+    given-names: Sahil
+    alias: kodeCraze
+    affiliation: "Independent researcher"
+    orcid: ""
+version: "0.1.0"
+date-released: "2026-10-18"
+license: CC-BY-4.0
+license-url: "https://creativecommons.org/licenses/by/4.0/"
+repository-code: "https://github.com/kodeCraze/frontier-ai-evals-journey"
+url: "https://github.com/kodeCraze/frontier-ai-evals-journey"
+keywords:
+  - evaluation
+  - benchmark
+  - multilingual
+  - Indic
+  - Hindi
+  - LLM
+  - reliability
+  - safety

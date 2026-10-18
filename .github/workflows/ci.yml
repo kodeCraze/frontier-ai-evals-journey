@@ -1,0 +1,42 @@
+name: CI
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ONE file, TWO systems.
+#
+# This is a GitHub Actions workflow *and* the CircleCI pipeline config: this
+# project's CircleCI setup uses the "GitHub Actions workflow file" preview mode,
+# with
+#     Project Settings ▸ Pipelines ▸ Config File Path: .github/workflows/ci.yml
+# CircleCI reads this file and runs the steps on CircleCI compute.
+#
+# ⚠️ Keep this file's PATH and NAME stable. Renaming or moving it (e.g. to
+#    validate.yml) breaks the CircleCI pipeline with "config file ...
+#    could not be located".
+#
+# GitHub Actions itself is currently blocked on this account by a billing lock,
+# so CircleCI is the pipeline that actually executes today.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deliberately NO actions/setup-python: CircleCI's GitHub Actions mode disables the
+      # `add-path` workflow command it relies on, so it would succeed without taking effect.
+      # This suite needs only Python 3.10+, which the runner image already provides.
+      - name: Validate data + schema (must exit 0)
+        run: python3 validate.py
+
+      - name: Smoke-test the evaluation pipeline (mock backend; not real results)
+        run: python3 evaluate.py --backend mock --langs hi
