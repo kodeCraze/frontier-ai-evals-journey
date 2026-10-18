@@ -1,0 +1,48 @@
+# --- Secrets (never commit) ---
+.env
+.env.*
+*.key
+secrets.json
+
+# --- Model weights and large artifacts (never commit) ---
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.ckpt
+*.gguf
+models/
+cache/
+*.zip
+*.tar
+*.tar.gz
+
+# --- Generated per-run outputs ---
+# Ignore per-item outputs; keep the human-facing summaries
+# (AGENTS.md §6: mock per-item outputs are not committed; the summary is).
+results/*
+!results/summary.md
+!results/*/
+results/*/*
+!results/*/summary.md
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
