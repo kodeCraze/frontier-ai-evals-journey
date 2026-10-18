@@ -428,7 +428,7 @@ def write_summary(out_dir: Path, backend_name: str, model: str, is_mock: bool,
         resp = r["response"].replace("\n", " ")[:160]
         lines.append(f"- **`{r['id']}`** ({r['category']}) — response: `{resp}`")
 
-    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 # ===========================================================================
@@ -504,7 +504,7 @@ def main(argv: list[str] | None = None) -> int:
             model_records.extend(records)
             lang_dir = out_root / safe
             lang_dir.mkdir(parents=True, exist_ok=True)
-            with (lang_dir / f"{lang}.jsonl").open("w", encoding="utf-8") as fh:
+            with (lang_dir / f"{lang}.jsonl").open("w", encoding="utf-8", newline="\n") as fh:
                 for rec in records:
                     fh.write(json.dumps({"model": model, "backend": args.backend,
                                          "judge": args.judge, **meta, **rec},
