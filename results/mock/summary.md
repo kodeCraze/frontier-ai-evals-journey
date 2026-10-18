@@ -10,7 +10,7 @@
 - backend: `mock`  ·  model: `mock-model`
 - judge: `heuristic` (heuristic judges are **not** real rubric scores)
 - suite version: `0.1.0`  ·  git: `unknown`
-- timestamp: `2026-10-18T07:38:43+00:00`  ·  seed: `0`  ·  temperature: 0
+- timestamp: `2026-10-18T07:39:56+00:00`  ·  seed: `0`  ·  temperature: 0
 - disclaimer: MOCK — NOT REAL MODEL RESULTS
 
 ## Overall
