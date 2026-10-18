@@ -158,7 +158,7 @@ class HFBackend:
 
     name = "hf"
 
-    def __init__(self, model: str, seed: int = 0, max_new_tokens: int = 256, **_):
+    def __init__(self, model: str, seed: int = 0, max_new_tokens: int = 512, **_):
         try:
             import torch
             from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -173,20 +173,45 @@ class HFBackend:
         self.seed = seed
         self.max_new_tokens = max_new_tokens
         self.tok = AutoTokenizer.from_pretrained(model)
-        self.net = AutoModelForCausalLM.from_pretrained(
-            model,
-            torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-            device_map="auto" if torch.cuda.is_available() else None,
-        )
+
+        kwargs: dict = {}
+        # transformers v5 renamed the `torch_dtype` argument to `dtype`; support both.
+        try:
+            from transformers import __version__ as _tv
+            _major = int(str(_tv).split(".")[0])
+        except Exception:
+            _major = 4
+        _dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+        kwargs["dtype" if _major >= 5 else "torch_dtype"] = _dtype
+        try:  # device_map="auto" needs accelerate; fall back to .to() if it's absent
+            import accelerate  # noqa: F401
+            if torch.cuda.is_available():
+                kwargs["device_map"] = "auto"
+        except ImportError:
+            pass
+        self.net = AutoModelForCausalLM.from_pretrained(model, **kwargs)
+        if "device_map" not in kwargs and torch.cuda.is_available():
+            self.net = self.net.to("cuda")
         self.net.eval()
 
     def generate(self, prompt: str, item: dict | None = None) -> str:
         torch = self._torch
         if getattr(self.tok, "chat_template", None):
-            ids = self.tok.apply_chat_template(
-                [{"role": "user", "content": prompt}],
-                add_generation_prompt=True, return_tensors="pt",
-            ).to(self.net.device)
+            msgs = [{"role": "user", "content": prompt}]
+            try:
+                # Ask reasoning models (e.g. Qwen3) not to emit a long  thinking…</think> block —
+                # it costs the token budget and makes scoring less reproducible.
+                enc = self.tok.apply_chat_template(
+                    msgs, add_generation_prompt=True, return_tensors="pt",
+                    enable_thinking=False,
+                )
+            except TypeError:
+                enc = self.tok.apply_chat_template(
+                    msgs, add_generation_prompt=True, return_tensors="pt",
+                )
+            # transformers v5 returns a BatchEncoding; v4 returned a plain tensor.
+            ids = enc if isinstance(enc, torch.Tensor) else enc["input_ids"]
+            ids = ids.to(self.net.device)
         else:
             ids = self.tok(prompt, return_tensors="pt").input_ids.to(self.net.device)
         with torch.no_grad():
@@ -195,7 +220,9 @@ class HFBackend:
                 do_sample=False,                 # temperature 0 for reproducible exact-match
                 pad_token_id=self.tok.eos_token_id,
             )
-        return self.tok.decode(out[0][ids.shape[-1]:], skip_special_tokens=True).strip()
+        text = self.tok.decode(out[0][ids.shape[-1]:], skip_special_tokens=True).strip()
+        # Strip any residual reasoning block so scoring sees the answer only.
+        return re.sub(r"^.*?</think>", "", text, flags=re.DOTALL).strip() or text
 
 
 def _post_json(url: str, payload: dict, headers: dict, timeout: int = 120) -> dict:
@@ -378,64 +405,102 @@ def git_commit() -> str:
         return "unknown"
 
 
-def write_summary(out_dir: Path, backend_name: str, model: str, is_mock: bool,
-                  meta: dict, by_lang: dict, records: list[dict],
-                  judge_mode: str) -> None:
-    langs = sorted(by_lang)
+def load_results(out_root: Path) -> dict:
+    """Group every results/<backend>/<model>/<lang>.jsonl by model -> language -> records.
+
+    Reading from disk (rather than only in-memory) means re-running one model never erases the
+    other models' rows from summary.md.
+    """
+    grouped: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
+    if not out_root.exists():
+        return grouped
+    for model_dir in sorted(p for p in out_root.iterdir() if p.is_dir()):
+        for lang_file in sorted(model_dir.glob("*.jsonl")):
+            for _lineno, rec in schema.iter_jsonl(lang_file):
+                grouped[rec.get("model", model_dir.name)][rec.get("language", lang_file.stem)] \
+                    .append(rec)
+    return grouped
+
+
+def write_summary(out_root: Path, backend_name: str, is_mock: bool, meta: dict) -> None:
+    grouped = load_results(out_root)
+    if not grouped:
+        return
+
+    judges = {r.get("judge") for m in grouped.values() for recs in m.values() for r in recs}
+    judge_mode = next(iter(judges)) if len(judges) == 1 else "mixed"
+
     lines: list[str] = []
-    lines.append(f"# Results — `{backend_name}` / `{model}`\n")
     if is_mock:
-        lines.insert(0, f"> ## ⚠️ {MOCK_WARNING}\n>\n"
-                        f"> The `mock` backend returns **synthetic** answers to exercise the "
-                        f"pipeline.\n> **No number below is a performance claim.** Run a real "
-                        f"backend before quoting anything.\n")
+        lines.append(f"> ## ⚠️ {MOCK_WARNING}\n>\n"
+                     f"> The `mock` backend returns **synthetic** answers to exercise the "
+                     f"pipeline.\n> **No number below is a performance claim.** Run a real "
+                     f"backend before quoting anything.\n")
+    lines.append(f"# Results — backend `{backend_name}`\n")
     lines.append("## Run metadata\n")
-    lines.append(f"- backend: `{backend_name}`  ·  model: `{model}`")
-    lines.append(f"- judge: `{judge_mode}` (heuristic judges are **not** real rubric scores)")
+    lines.append(f"- backend: `{backend_name}`  ·  judge: `{judge_mode}`")
     lines.append(f"- suite version: `{schema.SUITE_VERSION}`  ·  git: `{meta['git']}`")
     lines.append(f"- timestamp: `{meta['timestamp']}`  ·  seed: `{meta['seed']}`  ·  "
                  f"temperature: 0")
-    lines.append(f"- disclaimer: {MOCK_WARNING if is_mock else 'real model runs'}\n")
-
-    lines.append("## Overall\n")
-    lines.append("| Language | N | overall | exact-match | chrF | rubric (0–2) |")
-    lines.append("|---|---|---|---|---|---|")
-    for lang in langs:
-        a = _agg(by_lang[lang])
-        lines.append(f"| {schema.LANGUAGES.get(lang, lang)} (`{lang}`) | {a['n']} | "
-                     f"{_fmt(a['overall'])} | {_fmt(a['exact'])} | {_fmt(a['chrf'])} | "
-                     f"{_fmt(a['rubric'], pct=False)} |")
-    all_a = _agg(records)
-    lines.append(f"| **All** | {all_a['n']} | {_fmt(all_a['overall'])} | {_fmt(all_a['exact'])} | "
-                 f"{_fmt(all_a['chrf'])} | {_fmt(all_a['rubric'], pct=False)} |\n")
-
-    lines.append("## By category\n")
-    cats = sorted({r["category"] for r in records})
-    lines.append("| Category | N | overall |")
-    lines.append("|---|---|---|")
-    by_cat = defaultdict(list)
-    for r in records:
-        by_cat[r["category"]].append(r)
-    for cat in cats:
-        a = _agg(by_cat[cat])
-        lines.append(f"| {schema.CATEGORIES.get(cat, cat)} | {a['n']} | {_fmt(a['overall'])} |")
+    lines.append(f"- disclaimer: {MOCK_WARNING if is_mock else 'real model runs'}")
+    if judge_mode == "heuristic":
+        lines.append("- ⚠️ rubric scores used the **heuristic** judge (not a real rubric score); "
+                     "run with `--judge <model>` for LLM-judged rubric items.")
     lines.append("")
 
-    failures = [r for r in records if r["score"] == 0.0]
-    lines.append(f"## Failure gallery ({len(failures)} zero-scored items)\n")
-    lines.append("Failures are shown on purpose (AGENTS.md §4) — they are the most informative part.\n")
-    for r in failures[:12]:
-        resp = r["response"].replace("\n", " ")[:160]
-        lines.append(f"- **`{r['id']}`** ({r['category']}) — response: `{resp}`")
+    lines.append("## Overall\n")
+    lines.append("| Model | Language | N | overall | exact-match | chrF | rubric (0–2) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for model in sorted(grouped):
+        by_lang = grouped[model]
+        for lang in sorted(by_lang):
+            a = _agg(by_lang[lang])
+            lines.append(f"| `{model}` | {schema.LANGUAGES.get(lang, lang)} (`{lang}`) | {a['n']} | "
+                         f"{_fmt(a['overall'])} | {_fmt(a['exact'])} | {_fmt(a['chrf'])} | "
+                         f"{_fmt(a['rubric'], pct=False)} |")
+        all_recs = [r for recs in by_lang.values() for r in recs]
+        a = _agg(all_recs)
+        lines.append(f"| **`{model}`** | **All** | {a['n']} | {_fmt(a['overall'])} | "
+                     f"{_fmt(a['exact'])} | {_fmt(a['chrf'])} | {_fmt(a['rubric'], pct=False)} |")
+    lines.append("")
 
-    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    lines.append("## By category (overall score)\n")
+    cats = list(schema.CATEGORIES)
+    lines.append("| Model | " + " | ".join(schema.CATEGORIES[c] for c in cats) + " |")
+    lines.append("|---" * (len(cats) + 1) + "|")
+    for model in sorted(grouped):
+        recs = [r for rs in grouped[model].values() for r in rs]
+        by_cat = defaultdict(list)
+        for r in recs:
+            by_cat[r["category"]].append(r)
+        cells = []
+        for cat in cats:
+            a = _agg(by_cat.get(cat, []))
+            cells.append(_fmt(a["overall"]) if a["n"] else "—")
+        lines.append(f"| `{model}` | " + " | ".join(cells) + " |")
+    lines.append("")
+
+    lines.append("## Failure gallery\n")
+    lines.append("Failures are shown on purpose (AGENTS.md §4) — they are the most informative part.\n")
+    for model in sorted(grouped):
+        recs = [r for rs in grouped[model].values() for r in rs]
+        failures = [r for r in recs if r["score"] == 0.0]
+        lines.append(f"### `{model}` — {len(failures)} zero-scored item(s)\n")
+        for r in failures[:10]:
+            resp = str(r.get("response", "")).replace("\n", " ")[:140]
+            lines.append(f"- **`{r['id']}`** ({r['category']}) — response: `{resp}`")
+        if len(failures) > 10:
+            lines.append(f"- …and {len(failures) - 10} more")
+        lines.append("")
+
+    (out_root / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 # ===========================================================================
 # Main
 # ===========================================================================
-def make_client(kind: str, model: str, seed: int):
-    return BACKENDS[kind](model=model, seed=seed)
+def make_client(kind: str, model: str, seed: int, **kwargs):
+    return BACKENDS[kind](model=model, seed=seed, **kwargs)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -447,6 +512,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--langs", default="", help="Comma-separated language codes (default: all).")
     p.add_argument("--limit", type=int, default=0, help="Max items per language (0 = all).")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--max-new-tokens", type=int, default=512,
+                   help="Max tokens generated per response (hf/openai/anthropic backends).")
     p.add_argument("--out", default="", help="Results directory (default: results/<backend>).")
     p.add_argument("--dry-run", action="store_true", help="Print the plan and exit.")
     args = p.parse_args(argv)
@@ -479,7 +546,7 @@ def main(argv: list[str] | None = None) -> int:
     judge_client = None
     if args.judge != "heuristic":
         judge_client = make_client(args.judge, models[0] if args.judge == args.backend else "judge",
-                                   args.seed)
+                                   args.seed, max_new_tokens=args.max_new_tokens)
     judge = Judge(judge_client)
 
     meta = {"timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -488,10 +555,9 @@ def main(argv: list[str] | None = None) -> int:
     out_root = Path(args.out) if args.out else schema.REPO_ROOT / "results" / args.backend
 
     for model in models:
-        backend = make_client(args.backend, model, args.seed)
+        backend = make_client(args.backend, model, args.seed, max_new_tokens=args.max_new_tokens)
         safe = model.replace("/", "__")
         model_records: list[dict] = []
-        m_by_lang: dict[str, list[dict]] = {}
 
         for lang, lang_items in sorted(by_lang.items()):
             records = []
@@ -500,7 +566,6 @@ def main(argv: list[str] | None = None) -> int:
                 records.append(rec)
                 mark = "✓" if rec["score"] >= 0.5 else "✗"
                 print(f"  {mark} {item['id']:<12} {rec['score']:.2f}  {rec['scoring']}")
-            m_by_lang[lang] = records
             model_records.extend(records)
             lang_dir = out_root / safe
             lang_dir.mkdir(parents=True, exist_ok=True)
@@ -510,11 +575,11 @@ def main(argv: list[str] | None = None) -> int:
                                          "judge": args.judge, **meta, **rec},
                                         ensure_ascii=False) + "\n")
 
-        write_summary(out_root, args.backend, model, is_mock, meta, m_by_lang,
-                      model_records, args.judge)
         a = _agg(model_records)
         print(f"evaluate: {model} → overall {_fmt(a['overall'])} over {a['n']} items")
-        print(f"evaluate: wrote {out_root / 'summary.md'}")
+
+    write_summary(out_root, args.backend, is_mock, meta)
+    print(f"evaluate: wrote {out_root / 'summary.md'}")
 
     if is_mock:
         print(f"evaluate: remember — {MOCK_WARNING}. Run a real backend before quoting numbers.")

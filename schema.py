@@ -82,25 +82,33 @@ JUDGES_DIR = REPO_ROOT / "judges"
 # ---------------------------------------------------------------------------
 # Text normalisation — shared by exact-match scoring AND the validator
 # ---------------------------------------------------------------------------
-# Keeps letters, digits, and Unicode word characters (Devanagari, Bengali, Tamil, Latin...);
-# drops punctuation, brackets, dandas, and collapses whitespace. Lowercases.
-#   "(B)"        -> "b"
-#   "I like tea."-> "i like tea"
-#   "100 °C"     -> "100 c"
-_KEEP = re.compile(r"[^\w\s]", flags=re.UNICODE)
+# Keeps Unicode letters, combining marks, and numbers (so Devanagari/Bengali/Tamil matras
+# survive), turns everything else (punctuation, symbols, brackets, dandas) into spaces, and
+# collapses whitespace. Lowercases.
+#   "(B)"         -> "b"
+#   "I like tea." -> "i like tea"
+#   "स्त्रीलिंग"    -> "स्त्रीलिंग"   (matras preserved!)
+#   "100 °C"      -> "100 c"
 _WS = re.compile(r"\s+", flags=re.UNICODE)
 
 
+def _is_kept(ch: str) -> bool:
+    # L* = letters, M* = marks (vowel signs/matras), N* = numbers. Everything else is a separator.
+    return ch.isspace() or unicodedata.category(ch)[0] in ("L", "M", "N")
+
+
 def normalize(text: object) -> str:
-    """Canonical form for string comparison. Deterministic and dependency-free."""
+    """Canonical form for string comparison. Deterministic and dependency-free.
+
+    Note: we cannot use ``re.\\w`` here — Python's ``\\w`` excludes combining marks, which would
+    strip Devanagari matras (e.g. ``स्त्रीलिंग`` -> ``स त र ल ग``) and corrupt every comparison.
+    """
     if text is None:
         return ""
-    t = unicodedata.normalize("NFC", str(text))
-    t = t.casefold()
+    t = unicodedata.normalize("NFC", str(text)).casefold()
     t = t.replace("।", " ").replace("॥", " ")  # Devanagari danda
-    t = _KEEP.sub(" ", t)
-    t = _WS.sub(" ", t)
-    return t.strip()
+    t = "".join(ch if _is_kept(ch) else " " for ch in t)
+    return _WS.sub(" ", t).strip()
 
 
 # ---------------------------------------------------------------------------
