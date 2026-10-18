@@ -1,10 +1,11 @@
-# Core (standard library only) — the suite runs with just Python 3.10+.
-# Nothing below is required for `validate.py`, `--backend mock`, or scoring.
+# Core (standard library only) — `validate.py`, `--backend mock`, and all scoring run with just
+# Python 3.10+. Nothing below is required for that.
 
 # --- Optional: run open models locally (--backend hf) ---
-# torch>=2.6
-# transformers>=4.44
-# accelerate>=0.33
+# Tested on Windows 11, Python 3.12, RTX 3060 Laptop 6 GB (CUDA 12.4):
+torch>=2.6,<3
+transformers>=5.20,<6
+accelerate>=1.15,<2
 
 # --- Optional: development ---
 # pytest>=8.0
