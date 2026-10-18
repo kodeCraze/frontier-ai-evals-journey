@@ -33,11 +33,24 @@ Part measurement suite, part learning journal. Built in public, method first.
 | `validate.py` (schema + integrity checks) | ✅ working |
 | `evaluate.py` (mock + HF + OpenAI + Anthropic backends) | ✅ working |
 | Judge prompts published (`judges/`) | ✅ v1 |
-| **Real model results** | ⏳ **none yet** — the only table so far is a labelled `mock` smoke test |
+| **Real model results** | ✅ first runs on 2 open models (Hindi) — below |
 
-> The headline result of this repo, today, is: **the pipeline runs end-to-end and every item is
-> sourced and validated.** Real numbers land as models are run; until then, no number here is a
-> performance claim. See `results/summary.md`.
+### First real results (Hindi, 30 items, temperature 0, seed 0)
+
+| Model | overall | exact-match | chrF | rubric (0–2)* |
+|---|---|---|---|---|
+| `Qwen/Qwen3-0.6B` | 60.1% | 55.6% | 67.2% | 1.33 |
+| `Qwen/Qwen3.5-0.8B` | 66.2% | 61.1% | 89.5% | 1.17 |
+
+\* The rubric column used the **heuristic** judge, not an LLM judge — treat it as indicative, not a
+real rubric score. Full tables and the failure gallery: `results/hf/summary.md`. N is small (30
+items); no statistical significance is claimed.
+
+**The most useful finding so far is a failure pattern, not a score.** Both small models are
+*confidently* wrong on culturally grounded knowledge (Holi's month, the Taj Mahal's city, India's
+National Education Day) and on in-script reasoning — precisely the gap this suite exists to
+measure. Translation chrF also over-rewards fluent-but-wrong output (one model produced the
+invented city "Tajmal").
 
 ## Rerun it in one command
 
